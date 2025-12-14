@@ -8,6 +8,6 @@ public interface ReviewService {
     ReviewDto addReview(ReviewDto dto);
     ReviewDto updateReview(Long id, ReviewDto dto);
     void deleteReview(Long id);
-    ReviewDto getById(Long id);  // ADD THIS
+    ReviewDto getById(Long id);
     List<ReviewDto> getReviewsForRestaurant(Long restaurantId);
 }

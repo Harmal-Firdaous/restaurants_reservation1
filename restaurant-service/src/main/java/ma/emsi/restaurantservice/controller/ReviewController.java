@@ -20,6 +20,11 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.addReview(dto));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ReviewDto> get(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getById(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ReviewDto> update(@PathVariable Long id, @RequestBody ReviewDto dto) {
         return ResponseEntity.ok(reviewService.updateReview(id, dto));
@@ -34,10 +39,5 @@ public class ReviewController {
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<List<ReviewDto>> getForRestaurant(@PathVariable Long restaurantId) {
         return ResponseEntity.ok(reviewService.getReviewsForRestaurant(restaurantId));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ReviewDto> get(@PathVariable Long id) {
-        return ResponseEntity.ok(reviewService.getById(id));
     }
 }

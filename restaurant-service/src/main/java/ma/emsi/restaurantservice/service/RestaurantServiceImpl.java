@@ -21,22 +21,33 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public RestaurantDto create(RestaurantDto dto) {
         Restaurant r = mapper.toEntity(dto);
+        if (r.getAverageRating() == null) {
+            r.setAverageRating(0.0);
+        }
         Restaurant saved = repository.save(r);
         return mapper.toDto(saved);
     }
 
     @Override
     public RestaurantDto getById(Long id) {
-        Restaurant r = repository.findById(id).orElseThrow();
+        Restaurant r = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         return mapper.toDto(r);
     }
+
+    @Override
+    public List<RestaurantDto> getAll() {
+        return repository.findAll().stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<RestaurantDto> findByCuisineType(CuisineType cuisineType) {
         return repository.findByCuisineType(cuisineType).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public List<RestaurantDto> searchByName(String q) {
@@ -46,8 +57,14 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    public List<RestaurantDto> findByRatingRange(Double minRating, Double maxRating) {
+        return repository.findByAverageRatingBetween(minRating, maxRating).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void delete(Long id) {
         repository.deleteById(id);
     }
-
 }

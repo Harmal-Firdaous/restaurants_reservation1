@@ -17,7 +17,7 @@ public class Review {
     private Long userId;
 
     @Column(nullable = false)
-    @Min(0) @Max(5)  // ADD VALIDATION
+    @Min(1) @Max(5)  // Changed from 0 to 1 (ratings should be 1-5)
     private Integer rating;
 
     @Column(length = 1000)

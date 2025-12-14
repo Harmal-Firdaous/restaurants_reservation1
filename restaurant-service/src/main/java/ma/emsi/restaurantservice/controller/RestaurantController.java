@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ma.emsi.restaurantservice.dto.RestaurantDto;
 import ma.emsi.restaurantservice.enums.CuisineType;
 import ma.emsi.restaurantservice.service.RestaurantService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,14 @@ public class RestaurantController {
 
     @PostMapping
     public ResponseEntity<RestaurantDto> create(@RequestBody RestaurantDto dto) {
-        return ResponseEntity.ok(restaurantService.create(dto));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(restaurantService.create(dto));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RestaurantDto>> getAll() {
+        return ResponseEntity.ok(restaurantService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -36,11 +44,17 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.findByCuisineType(cuisine));
     }
 
+    @GetMapping("/rating")
+    public ResponseEntity<List<RestaurantDto>> getByRating(
+            @RequestParam(defaultValue = "0.0") Double min,
+            @RequestParam(defaultValue = "5.0") Double max
+    ) {
+        return ResponseEntity.ok(restaurantService.findByRatingRange(min, max));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         restaurantService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
-
 }

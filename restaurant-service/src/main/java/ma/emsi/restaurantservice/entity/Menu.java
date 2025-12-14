@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "menus")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Menu {
 
@@ -16,12 +17,10 @@ public class Menu {
     private String title;
 
     @ManyToOne
+    @JoinColumn(name = "restaurant_id")  // ADD THIS
     private Restaurant restaurant;
 
-    @OneToMany(
-            mappedBy = "menu",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Plat> plats = new ArrayList<>();
-
 }

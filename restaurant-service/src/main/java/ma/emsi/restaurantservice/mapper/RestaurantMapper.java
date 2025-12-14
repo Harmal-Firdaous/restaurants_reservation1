@@ -18,7 +18,7 @@ public class RestaurantMapper {
                 .longitude(r.getLongitude())
                 .googlePlaceId(r.getGooglePlaceId())
                 .cuisineType(r.getCuisineType())
-                .averageRating(r.getAverageRating())
+                .averageRating(r.getAverageRating() != null ? r.getAverageRating() : 0.0)
                 .build();
     }
 

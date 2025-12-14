@@ -9,55 +9,46 @@ import java.util.List;
 
 @Entity
 @Table(name = "restaurants")
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Restaurant {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String address;
     private Double latitude;
     private Double longitude;
+    private String googlePlaceId;
+
     @Enumerated(EnumType.STRING)
     private CuisineType cuisineType;
 
-    @Column(name = "google_place_id")
-    private String googlePlaceId;
+    @Column(columnDefinition = "DOUBLE DEFAULT 0.0")
+    @Builder.Default
+    private Double averageRating = 0.0;
 
-    @Column(length = 1000)
-    private String description;
+    // ADD orphanRemoval = true
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 
-    private String phoneNumber;
-    private String website;
-
-    @ElementCollection
-    @CollectionTable(name = "restaurant_opening_hours", joinColumns = @JoinColumn(name = "restaurant_id"))
-    @Column(name = "opening_hour")
-    private List<String> openingHours;
-
-    @OneToMany(
-            mappedBy = "restaurant",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    // ADD menus relationship with cascade
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Menu> menus = new ArrayList<>();
 
-
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews;
-
-    // Calculate average rating
-    public Double getAverageRating() {
+    public void calculateAverageRating() {
         if (reviews == null || reviews.isEmpty()) {
-            return null;
+            this.averageRating = 0.0;
+            return;
         }
-        return reviews.stream()
+
+        double sum = reviews.stream()
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0.0);
+
+        this.averageRating = Math.round(sum * 10.0) / 10.0;
     }
 }
