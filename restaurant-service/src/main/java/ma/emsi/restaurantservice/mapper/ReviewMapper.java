@@ -9,23 +9,24 @@ public class ReviewMapper {
 
     public ReviewDto toDto(Review r) {
         if (r == null) return null;
+
         return ReviewDto.builder()
                 .id(r.getId())
-                .rating(r.getRating())
-                .comment(r.getComment())
                 .restaurantId(r.getRestaurant() != null ? r.getRestaurant().getId() : null)
                 .userId(r.getUserId())
+                .rating(r.getRating())
+                .comment(r.getComment())
                 .build();
     }
 
     public Review toEntity(ReviewDto dto) {
         if (dto == null) return null;
-        Review r = new Review();
-        r.setId(dto.getId());
-        r.setRating(dto.getRating());
-        r.setComment(dto.getComment());
-        r.setUserId(dto.getUserId());
-        // restaurant assignment must be done in service
-        return r;
+
+        return Review.builder()
+                .id(dto.getId())
+                .userId(dto.getUserId())
+                .rating(dto.getRating())
+                .comment(dto.getComment())
+                .build();
     }
 }

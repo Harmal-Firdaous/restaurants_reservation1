@@ -3,22 +3,25 @@ package ma.emsi.restaurantservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "menus")
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Menu {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String description;
-    private Double price;
+    private String title;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
+
+    @OneToMany(
+            mappedBy = "menu",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Plat> plats = new ArrayList<>();
+
 }

@@ -3,6 +3,7 @@ package ma.emsi.restaurantservice.service;
 import lombok.RequiredArgsConstructor;
 import ma.emsi.restaurantservice.dto.RestaurantDto;
 import ma.emsi.restaurantservice.entity.Restaurant;
+import ma.emsi.restaurantservice.enums.CuisineType;
 import ma.emsi.restaurantservice.mapper.RestaurantMapper;
 import ma.emsi.restaurantservice.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant r = repository.findById(id).orElseThrow();
         return mapper.toDto(r);
     }
+    @Override
+    public List<RestaurantDto> findByCuisineType(CuisineType cuisineType) {
+        return repository.findByCuisineType(cuisineType).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public List<RestaurantDto> searchByName(String q) {
@@ -36,4 +44,10 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
 }

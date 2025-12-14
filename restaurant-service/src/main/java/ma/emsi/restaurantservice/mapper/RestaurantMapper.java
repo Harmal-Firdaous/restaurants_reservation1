@@ -9,6 +9,7 @@ public class RestaurantMapper {
 
     public RestaurantDto toDto(Restaurant r) {
         if (r == null) return null;
+
         return RestaurantDto.builder()
                 .id(r.getId())
                 .name(r.getName())
@@ -16,12 +17,14 @@ public class RestaurantMapper {
                 .latitude(r.getLatitude())
                 .longitude(r.getLongitude())
                 .googlePlaceId(r.getGooglePlaceId())
-                .averageRating(r.getAverageRating()) // Use the calculated method
+                .cuisineType(r.getCuisineType())
+                .averageRating(r.getAverageRating())
                 .build();
     }
 
     public Restaurant toEntity(RestaurantDto dto) {
         if (dto == null) return null;
+
         return Restaurant.builder()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -29,6 +32,7 @@ public class RestaurantMapper {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .googlePlaceId(dto.getGooglePlaceId())
+                .cuisineType(dto.getCuisineType())
                 .build();
     }
 }

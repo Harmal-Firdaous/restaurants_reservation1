@@ -1,24 +1,29 @@
 package ma.emsi.restaurantservice.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 @Entity
 @Table(name = "reviews")
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Review {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId; // référence vers user-service (id)
+    @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    @Min(0) @Max(5)  // ADD VALIDATION
     private Integer rating;
+
+    @Column(length = 1000)
     private String comment;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 }

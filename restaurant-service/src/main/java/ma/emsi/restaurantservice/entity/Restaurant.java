@@ -2,7 +2,9 @@ package ma.emsi.restaurantservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ma.emsi.restaurantservice.enums.CuisineType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,9 +22,8 @@ public class Restaurant {
     private String address;
     private Double latitude;
     private Double longitude;
-
-    @Column(name = "cuisine_type")
-    private String cuisineType; // e.g., "Italian", "Japanese", "Moroccan", "French"
+    @Enumerated(EnumType.STRING)
+    private CuisineType cuisineType;
 
     @Column(name = "google_place_id")
     private String googlePlaceId;
@@ -38,8 +39,13 @@ public class Restaurant {
     @Column(name = "opening_hour")
     private List<String> openingHours;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Menu> menus;
+    @OneToMany(
+            mappedBy = "restaurant",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Menu> menus = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;

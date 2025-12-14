@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 
 public class MenuDto {
     private Long id;
-    private String name;
-    private double price;
+    private String title;
     private Long restaurantId;
+    private List<PlatDto> plats;
 }

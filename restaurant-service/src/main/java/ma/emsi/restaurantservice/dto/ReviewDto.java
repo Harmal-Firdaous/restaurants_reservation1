@@ -1,18 +1,12 @@
 package ma.emsi.restaurantservice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ReviewDto {
     private Long id;
-    private int rating;
-    private String comment;
     private Long restaurantId;
-    private Long userId; // venant du USER-SERVICE
+    private Long userId;
+    private Integer rating;
+    private String comment;
 }
