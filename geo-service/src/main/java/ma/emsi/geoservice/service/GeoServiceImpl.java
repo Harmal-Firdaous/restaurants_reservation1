@@ -2,6 +2,7 @@ package ma.emsi.geoservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ma.emsi.geoservice.dto.PlaceDetailsDto;
 import ma.emsi.geoservice.dto.PlaceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,63 +24,62 @@ public class GeoServiceImpl implements GeoService {
     private String baseUrl;
 
     @Override
-    public PlaceDto getPlaceDetails(String placeId) {
-        String url = String.format("%s/details/json?place_id=%s&key=%s", baseUrl, placeId, apiKey);
+    public PlaceDetailsDto getPlaceDetails(String placeId) {
 
-        log.info("Fetching place details from: {}", url);
+        String url = baseUrl + "/details/json"
+                + "?place_id=" + placeId
+                + "&fields=place_id,name,formatted_address,rating,geometry,photos,reviews"
+                + "&key=" + apiKey;
 
-        try {
-            Map<String, Object> resp = webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+        Map<String, Object> resp = webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-            log.info("Response received: {}", resp);
-
-            if (resp == null || !resp.containsKey("result")) {
-                log.error("Invalid response structure");
-                return new PlaceDto();
-            }
-
-            Map<String, Object> result = (Map<String, Object>) resp.get("result");
-            PlaceDto dto = new PlaceDto();
-
-            if (result != null) {
-                dto.setPlaceId((String) result.get("place_id"));
-                dto.setName((String) result.get("name"));
-
-                if (result.containsKey("rating")) {
-                    dto.setRating(Double.parseDouble(result.get("rating").toString()));
-                }
-
-                // Extract geometry location
-                if (result.containsKey("geometry")) {
-                    Map<String, Object> geometry = (Map<String, Object>) result.get("geometry");
-                    if (geometry.containsKey("location")) {
-                        Map<String, Object> location = (Map<String, Object>) geometry.get("location");
-                        dto.setLatitude(Double.parseDouble(location.get("lat").toString()));
-                        dto.setLongitude(Double.parseDouble(location.get("lng").toString()));
-                    }
-                }
-            }
-
-            return dto;
-
-        } catch (Exception e) {
-            log.error("Error fetching place details: ", e);
-            return new PlaceDto();
+        if (resp == null || !resp.containsKey("result")) {
+            return new PlaceDetailsDto();
         }
+
+        Map<String, Object> result = (Map<String, Object>) resp.get("result");
+
+        Map<String, Object> location =
+                (Map<String, Object>) ((Map<String, Object>)
+                        result.get("geometry")).get("location");
+
+        List<String> photos = new ArrayList<>();
+        if (result.containsKey("photos")) {
+            List<Map<String, Object>> rawPhotos =
+                    (List<Map<String, Object>>) result.get("photos");
+            rawPhotos.forEach(p ->
+                    photos.add(p.get("photo_reference").toString())
+            );
+        }
+
+        return PlaceDetailsDto.builder()
+                .placeId(placeId)
+                .name((String) result.get("name"))
+                .address((String) result.get("formatted_address"))
+                .rating(
+                        result.get("rating") == null ? 0 :
+                                Double.parseDouble(result.get("rating").toString())
+                )
+                .lat(Double.parseDouble(location.get("lat").toString()))
+                .lng(Double.parseDouble(location.get("lng").toString()))
+                .photos(photos)
+                .build();
     }
+
 
     @Override
     public List<PlaceDto> searchNearby(double lat, double lng, int radius, String keyword) {
-        // Build URL with proper encoding
+
         StringBuilder urlBuilder = new StringBuilder()
                 .append(baseUrl)
-                .append("/nearbysearch/json?location=")
-                .append(lat).append(",").append(lng)
+                .append("/nearbysearch/json?")
+                .append("location=").append(lat).append(",").append(lng)
                 .append("&radius=").append(radius)
+                .append("&type=restaurant") // ✅ FIX MAJEUR
                 .append("&key=").append(apiKey);
 
         if (keyword != null && !keyword.isEmpty()) {
@@ -87,7 +87,7 @@ public class GeoServiceImpl implements GeoService {
         }
 
         String url = urlBuilder.toString();
-        log.info("Searching nearby places: {}", url);
+        log.info("Google Places Nearby URL: {}", url);
 
         try {
             Map<String, Object> resp = webClient.get()
@@ -96,59 +96,62 @@ public class GeoServiceImpl implements GeoService {
                     .bodyToMono(Map.class)
                     .block();
 
-            log.info("Nearby search response: {}", resp);
-
-            if (resp == null || !resp.containsKey("results")) {
-                log.warn("No results found in response");
+            if (resp == null) {
+                log.error("Google response is null");
                 return Collections.emptyList();
             }
 
             String status = (String) resp.get("status");
-            if (!"OK".equals(status) && !"ZERO_RESULTS".equals(status)) {
-                log.error("API returned error status: {}", status);
-                if (resp.containsKey("error_message")) {
-                    log.error("Error message: {}", resp.get("error_message"));
-                }
+            log.info("Google Places status: {}", status);
+
+            if (!"OK".equals(status)) {
+                log.warn("Google returned non-OK status: {}", status);
+                log.warn("Full response: {}", resp);
                 return Collections.emptyList();
             }
 
-            List<Map<String, Object>> results = (List<Map<String, Object>>) resp.get("results");
+            List<Map<String, Object>> results =
+                    (List<Map<String, Object>>) resp.get("results");
+
             if (results == null || results.isEmpty()) {
+                log.warn("Google returned empty results");
                 return Collections.emptyList();
             }
 
-            List<PlaceDto> list = new ArrayList<>();
+            List<PlaceDto> places = new ArrayList<>();
+
             for (Map<String, Object> r : results) {
                 PlaceDto p = new PlaceDto();
                 p.setPlaceId((String) r.get("place_id"));
                 p.setName((String) r.get("name"));
 
                 if (r.containsKey("geometry")) {
-                    Map<String, Object> geo = (Map<String, Object>) r.get("geometry");
-                    if (geo != null && geo.containsKey("location")) {
-                        Map<String, Object> loc = (Map<String, Object>) geo.get("location");
-                        if (loc != null) {
-                            p.setLatitude(Double.parseDouble(loc.get("lat").toString()));
-                            p.setLongitude(Double.parseDouble(loc.get("lng").toString()));
-                        }
-                    }
+                    Map<String, Object> geometry =
+                            (Map<String, Object>) r.get("geometry");
+
+                    Map<String, Object> location =
+                            (Map<String, Object>) geometry.get("location");
+
+                    p.setLatitude(Double.parseDouble(location.get("lat").toString()));
+                    p.setLongitude(Double.parseDouble(location.get("lng").toString()));
                 }
 
                 if (r.containsKey("rating")) {
                     p.setRating(Double.parseDouble(r.get("rating").toString()));
                 }
 
-                list.add(p);
+                places.add(p);
             }
 
-            log.info("Found {} nearby places", list.size());
-            return list;
+            log.info("Nearby restaurants found: {}", places.size());
+            return places;
 
         } catch (Exception e) {
-            log.error("Error searching nearby places: ", e);
+            log.error("Error calling Google Places API", e);
             return Collections.emptyList();
         }
     }
+
 
     @Override
     public double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {

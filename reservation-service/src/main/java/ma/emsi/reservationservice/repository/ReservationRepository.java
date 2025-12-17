@@ -7,6 +7,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByRestaurantIdAndDateTimeBetween(Long restaurantId, LocalDateTime from, LocalDateTime to);
+    //List<Reservation> findByRestaurantIdAndDateTimeBetween(Long restaurantId, LocalDateTime from, LocalDateTime to);
     List<Reservation> findByUserId(Long userId);
 }

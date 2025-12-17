@@ -1,6 +1,7 @@
 package ma.emsi.geoservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import ma.emsi.geoservice.dto.PlaceDetailsDto;
 import ma.emsi.geoservice.dto.PlaceDto;
 import ma.emsi.geoservice.service.GeoService;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,10 @@ public class GeoController {
     private final GeoService geoService;
 
     @GetMapping("/place/{placeId}")
-    public ResponseEntity<PlaceDto> place(@PathVariable String placeId) {
+    public ResponseEntity<PlaceDetailsDto> place(@PathVariable String placeId) {
         return ResponseEntity.ok(geoService.getPlaceDetails(placeId));
     }
+
 
     @GetMapping("/nearby")
     public ResponseEntity<List<PlaceDto>> nearby(@RequestParam double lat, @RequestParam double lng,

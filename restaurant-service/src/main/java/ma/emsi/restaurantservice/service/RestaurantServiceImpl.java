@@ -1,6 +1,8 @@
 package ma.emsi.restaurantservice.service;
 
 import lombok.RequiredArgsConstructor;
+import ma.emsi.restaurantservice.client.GeoClient;
+import ma.emsi.restaurantservice.dto.PlaceDetailsDto;
 import ma.emsi.restaurantservice.dto.RestaurantDto;
 import ma.emsi.restaurantservice.entity.Restaurant;
 import ma.emsi.restaurantservice.enums.CuisineType;
@@ -17,15 +19,31 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepository repository;
     private final RestaurantMapper mapper;
+    private final GeoClient geoClient;
 
     @Override
     public RestaurantDto create(RestaurantDto dto) {
-        Restaurant r = mapper.toEntity(dto);
-        if (r.getAverageRating() == null) {
-            r.setAverageRating(0.0);
+
+        // Enrichissement via GeoService
+        if (dto.getGooglePlaceId() != null && !dto.getGooglePlaceId().isEmpty()) {
+
+            PlaceDetailsDto place =
+                    geoClient.getPlaceDetails(dto.getGooglePlaceId());
+
+            dto.setName(place.getName());
+            dto.setAddress(place.getAddress());
+            dto.setLatitude(place.getLat());
+            dto.setLongitude(place.getLng());
+            dto.setAverageRating(place.getRating());
         }
-        Restaurant saved = repository.save(r);
-        return mapper.toDto(saved);
+
+        Restaurant restaurant = mapper.toEntity(dto);
+
+        if (restaurant.getAverageRating() == null) {
+            restaurant.setAverageRating(0.0);
+        }
+
+        return mapper.toDto(repository.save(restaurant));
     }
 
     @Override
@@ -37,28 +55,32 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDto> getAll() {
-        return repository.findAll().stream()
+        return repository.findAll()
+                .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<RestaurantDto> findByCuisineType(CuisineType cuisineType) {
-        return repository.findByCuisineType(cuisineType).stream()
+        return repository.findByCuisineType(cuisineType)
+                .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<RestaurantDto> searchByName(String q) {
-        return repository.findByNameContainingIgnoreCase(q).stream()
+        return repository.findByNameContainingIgnoreCase(q)
+                .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<RestaurantDto> findByRatingRange(Double minRating, Double maxRating) {
-        return repository.findByAverageRatingBetween(minRating, maxRating).stream()
+        return repository.findByAverageRatingBetween(minRating, maxRating)
+                .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
