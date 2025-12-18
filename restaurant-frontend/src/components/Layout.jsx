@@ -1,14 +1,10 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { ShoppingBag, Utensils, ClipboardList } from 'lucide-react';
+import { Utensils, Calendar, Home } from 'lucide-react';
 
 const Layout = ({ children }) => {
-    const { cartItems } = useCart();
     const location = useLocation();
-
-    const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const isActive = (path) => location.pathname === path ? 'text-primary' : 'text-gray-500 hover:text-primary';
 
@@ -19,25 +15,17 @@ const Layout = ({ children }) => {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-primary">
                         <Utensils className="w-8 h-8" />
-                        <span>FoodDelivery</span>
+                        <span>RestaurantReserve</span>
                     </Link>
 
                     <nav className="flex items-center gap-6">
                         <Link to="/" className={`flex items-center gap-1 font-medium transition-colors ${isActive('/')}`}>
+                            <Home className="w-5 h-5" />
                             Home
                         </Link>
-                        <Link to="/orders" className={`flex items-center gap-1 font-medium transition-colors ${isActive('/orders')}`}>
-                            <ClipboardList className="w-5 h-5" />
-                            Orders
-                        </Link>
-                        <Link to="/cart" className={`flex items-center gap-1 font-medium transition-colors relative ${isActive('/cart')}`}>
-                            <ShoppingBag className="w-5 h-5" />
-                            <span>Cart</span>
-                            {cartCount > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
+                        <Link to="/reservations" className={`flex items-center gap-1 font-medium transition-colors ${isActive('/reservations')}`}>
+                            <Calendar className="w-5 h-5" />
+                            My Reservations
                         </Link>
                     </nav>
                 </div>
@@ -51,7 +39,7 @@ const Layout = ({ children }) => {
             {/* Footer */}
             <footer className="bg-white border-t py-6 mt-auto">
                 <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-                    &copy; {new Date().getFullYear()} FoodDelivery App.
+                    &copy; {new Date().getFullYear()} RestaurantReserve - Find and book your perfect dining experience.
                 </div>
             </footer>
         </div>
