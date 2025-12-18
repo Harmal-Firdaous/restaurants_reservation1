@@ -20,5 +20,7 @@ public class DataRestConfig implements RepositoryRestConfigurer {
 
         // basePath : si tu veux exposer par exemple /api/restaurants
         config.setBasePath("/api");
+
+        // CORS is handled by the Gateway Service - do not configure here
     }
 }
